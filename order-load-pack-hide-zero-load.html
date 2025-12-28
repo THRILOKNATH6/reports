@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>Order vs Load vs Pack (Hide Zero Load)</title>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+    <h2 style="margin:0;">Order → Load → Pack Comparison</h2>
+    <button id="alertsButton" onclick="showAllErrors()"
+      style="background:#dc3545;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:16px;font-weight:bold;display:none;box-shadow:0 2px 8px rgba(220,53,69,0.3);transition:all 0.3s;">
+      <span style="font-size:20px;margin-right:8px;">⚠️</span>
+      <span id="alertsCount">0</span> Alerts
+    </button>
+  </div>
+
+  <div id="dataStatusMessage"
+    style="display:none;background:#d1ecf1;color:#0c5460;padding:10px 20px;border-radius:5px;margin-bottom:15px;border-left:4px solid #17a2b8">
+    <strong>ℹ️ Data Restored:</strong> Previously uploaded data has been automatically loaded. <span
+      id="dataTimestamp"></span>
+  </div>
+
+  <!-- Main container with upload and master summary side by side -->
+  <div style="display:flex;gap:20px;margin-bottom:20px;align-items:flex-start">
+    <!-- Left side: Upload section -->
+    <div class="upload-section" style="flex:1;min-width:400px">
+      <div class="file-input">
+        <label>Order File: </label><input type="file" id="orderFile" accept=".xlsx">
+      </div>
+      <div class="file-input">
+        <label>Load File: </label><input type="file" id="loadFile" accept=".xlsx">
+      </div>
+      <div class="file-input">
+        <label>Pack File: </label><input type="file" id="packFile" accept=".xlsx">
+      </div>
+      <button onclick="process()">Compare</button>
+      <button onclick="showPOView()" style="background:#17a2b8;margin-left:10px">PO View</button>
+      <button onclick="showOCView()" style="background:#6f42c1;margin-left:10px">OC View</button>
+      <button onclick="window.location.href='daily-summary.html'" style="background:#28a745;margin-left:10px">Loading
+        Summary</button>
+      <button onclick="window.location.href='packing-summary.html'" style="background:#007bff;margin-left:10px">Packing
+        Summary</button>
+      <button onclick="toggleFilters()" style="background:#6c757d;margin-left:10px">Toggle Filters</button>
+      <button onclick="exportToPDF()" style="background:#e83e8c;margin-left:10px">Export to PDF</button>
+      <button onclick="exportToExcel()" style="background:#20c997;margin-left:10px">Export to Excel</button>
+      <button onclick="clearLoadedData()" style="background:#fd7e14;margin-left:10px">Clear Data</button>
+    </div>
+
+    <!-- Right side: Master Summary -->
+    <div id="masterSummarySection"
+      style="display:none;background:white;padding:20px;border-radius:8px;box-shadow:0 2px 4px rgba(0,0,0,0.1);flex:1;min-width:400px">
+      <h3 style="margin-top:0">Master Summary</h3>
+      <div id="masterSummaryContent" style="display:flex;gap:15px;flex-wrap:wrap;margin-bottom:15px">
+      </div>
+      <button onclick="toggleStyleDetails()"
+        style="background:#17a2b8;padding:10px 20px;border:none;border-radius:5px;color:white;font-weight:bold;cursor:pointer">
+        More Details (Style-wise Comparison)
+      </button>
+    </div>
+  </div>
+
+  <!-- Regular Summary Section -->
+  <div id="summarySection"
+    style="display:none;background:white;padding:20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1)">
+    <h3>Summary</h3>
+    <div id="summaryContent" style="display:flex;gap:20px;flex-wrap:wrap">
+    </div>
+    <div id="mergedTableBtnContainer" style="margin-top:20px;text-align:center;display:none">
+      <button onclick="showMergedTable()"
+        style="background:#6f42c1;padding:12px 24px;border:none;border-radius:5px;color:white;font-weight:bold;cursor:pointer;font-size:14px">
+        Show Merged Table
+      </button>
+    </div>
+  </div>
+
+  <div id="styleDetailsSection"
+    style="display:none;background:white;padding:20px;border-radius:8px;margin-bottom:20px;box-shadow:0 2px 4px rgba(0,0,0,0.1)">
+    <h3>Style-wise Comparison</h3>
+    <div id="styleDetailsContent">
+    </div>
+  </div>
+
+  <div class="filter-section" id="filterSection">
+    <h3>Filter Results</h3>
+    <div class="filter-group">
+      <label>OC:</label>
+      <input type="text" class="filter-search" id="ocSearch" placeholder="Search OC..." oninput="searchFilter('oc')">
+      <select id="ocFilter" multiple>
+        <option value="ALL" selected>-- All --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Style:</label>
+      <input type="text" class="filter-search" id="styleSearch" placeholder="Search Style..."
+        oninput="searchFilter('style')">
+      <select id="styleFilter" multiple>
+        <option value="ALL" selected>-- All --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>Colour:</label>
+      <input type="text" class="filter-search" id="colourSearch" placeholder="Search Colour..."
+        oninput="searchFilter('colour')">
+      <select id="colourFilter" multiple>
+        <option value="ALL" selected>-- All --</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label>PO:</label>
+      <input type="text" class="filter-search" id="poSearch" placeholder="Search PO..." oninput="searchFilter('po')">
+      <select id="poFilter" multiple>
+        <option value="ALL" selected>-- All --</option>
+      </select>
+    </div>
+    <div class="filter-buttons">
+      <button onclick="applyFilters()">Apply Filters</button>
+      <button onclick="clearFilters()" style="background:#6c757d">Clear Filters</button>
+    </div>
+  </div>
+
+  <div id="output"></div>
+
+  <script src="app.js"></script>
+</body>
+
+</html>
