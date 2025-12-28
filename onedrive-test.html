@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OneDrive Excel Viewer</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 12px 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        button {
+            padding: 12px 30px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        #status {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        #status.loading {
+            display: block;
+            background: #e7f3ff;
+            color: #004085;
+            border-left: 4px solid #0066cc;
+        }
+
+        #status.error {
+            display: block;
+            background: #f8d7da;
+            color: #721c24;
+            border-left: 4px solid #dc3545;
+        }
+
+        #status.success {
+            display: block;
+            background: #d4edda;
+            color: #155724;
+            border-left: 4px solid #28a745;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            margin-top: 20px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        th {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+        }
+
+        td {
+            padding: 10px 12px;
+            border-bottom: 1px solid #eee;
+        }
+
+        tbody tr:hover {
+            background: #f8f9ff;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>📊 Cloud Excel Viewer</h1>
+        <p class="subtitle">Test Google Drive or OneDrive links (Google Drive recommended)</p>
+
+        <div class="input-group">
+            <input type="text" id="cloudUrl" placeholder="Paste Google Drive or OneDrive link here" value="">
+            <button onclick="fetchAndDisplay()" id="fetchBtn">Get Data</button>
+        </div>
+
+        <div
+            style="margin-bottom: 20px; padding: 15px; background: #e7f3ff; border-radius: 8px; border-left: 4px solid #0066cc;">
+            <strong>💡 Google Drive Format:</strong><br>
+            <code style="background: white; padding: 5px; border-radius: 4px; display: inline-block; margin-top: 5px;">
+        https://drive.google.com/uc?export=download&id=FILE_ID
+      </code>
+            <br><br>
+            <strong>📝 How to get FILE_ID:</strong><br>
+            From share link: <code>https://drive.google.com/file/d/<strong>FILE_ID</strong>/view</code>
+        </div>
+
+        <div id="status"></div>
+
+        <div class="table-container" id="tableContainer"></div>
+    </div>
+
+    <script>
+        async function fetchAndDisplay() {
+            const urlInput = document.getElementById('cloudUrl');
+            const statusDiv = document.getElementById('status');
+            const tableContainer = document.getElementById('tableContainer');
+            const fetchBtn = document.getElementById('fetchBtn');
+
+            const url = urlInput.value.trim();
+
+            if (!url) {
+                showStatus('error', 'Please enter a cloud storage URL');
+                return;
+            }
+
+            fetchBtn.disabled = true;
+
+            // Detect cloud provider
+            const provider = url.includes('drive.google.com') ? 'Google Drive' :
+                url.includes('1drv.ms') ? 'OneDrive' : 'Cloud Storage';
+
+            showStatus('loading', `<div class="spinner"></div> Fetching data from ${provider} via backend...`);
+            tableContainer.innerHTML = '';
+
+            try {
+                // Call backend API
+                const response = await fetch('http://localhost:3001/api/cloud/fetch', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        orderUrl: url,
+                        loadUrl: url,
+                        packUrl: url
+                    })
+                });
+
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || 'Failed to fetch data');
+                }
+
+                const data = await response.json();
+
+                // Display the first file's data
+                const excelData = data.data.orderData;
+
+                if (!excelData || excelData.length === 0) {
+                    throw new Error('No data found in the file');
+                }
+
+                showStatus('success', `✅ Success! Loaded ${excelData.length} rows from ${provider}`);
+                displayTable(excelData);
+
+            } catch (error) {
+                console.error('Error:', error);
+
+                let troubleshooting = '';
+                if (url.includes('1drv.ms')) {
+                    troubleshooting = `
+            <strong>⚠️ OneDrive Note:</strong> OneDrive links may not work due to authentication requirements.<br>
+            <strong>Recommendation:</strong> Use Google Drive instead for better reliability.
+          `;
+                } else if (url.includes('drive.google.com')) {
+                    troubleshooting = `
+            <strong>Troubleshooting Google Drive:</strong><br>
+            • Make sure the file is set to "Anyone with the link can view"<br>
+            • Use the direct download format: <code>https://drive.google.com/uc?export=download&id=FILE_ID</code><br>
+            • Extract FILE_ID from your share link
+          `;
+                }
+
+                showStatus('error', `❌ Error: ${error.message}<br><br>
+          ${troubleshooting}<br><br>
+          <strong>General Troubleshooting:</strong><br>
+          • Make sure the backend server is running on port 3001<br>
+          • Check that the file is publicly accessible<br>
+          • Try using "Anyone with the link can view" sharing setting`);
+            } finally {
+                fetchBtn.disabled = false;
+            }
+        }
+
+        function showStatus(type, message) {
+            const statusDiv = document.getElementById('status');
+            statusDiv.className = type;
+            statusDiv.innerHTML = message;
+        }
+
+        function displayTable(data) {
+            const tableContainer = document.getElementById('tableContainer');
+
+            if (data.length === 0) {
+                tableContainer.innerHTML = '<p>No data to display</p>';
+                return;
+            }
+
+            const headers = data[0];
+            const rows = data.slice(1);
+
+            let html = `<h3>📋 Data Preview (${rows.length} rows)</h3><table><thead><tr>`;
+            headers.forEach(header => {
+                html += `<th>${header || ''}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+
+            // Show first 100 rows only
+            const displayRows = rows.slice(0, 100);
+            displayRows.forEach(row => {
+                html += '<tr>';
+                headers.forEach((_, index) => {
+                    html += `<td>${row[index] !== undefined ? row[index] : ''}</td>`;
+                });
+                html += '</tr>';
+            });
+
+            html += '</tbody></table>';
+
+            if (rows.length > 100) {
+                html += `<p style="text-align: center; color: #666; margin-top: 10px;">Showing first 100 of ${rows.length} rows</p>`;
+            }
+
+            tableContainer.innerHTML = html;
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('cloudUrl').addEventListener('keypress', function (e) {
+            if (e.key === 'Enter') {
+                fetchAndDisplay();
+            }
+        });
+    </script>
+</body>
+
+</html>

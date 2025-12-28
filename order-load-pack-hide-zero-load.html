@@ -7,6 +7,7 @@
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script src="sheets-config.js"></script>
   <link rel="stylesheet" href="styles.css">
 </head>
 
@@ -27,30 +28,73 @@
       id="dataTimestamp"></span>
   </div>
 
-  <!-- Main container with upload and master summary side by side -->
+
+  <!-- Main container with upload options and master summary side by side -->
   <div style="display:flex;gap:20px;margin-bottom:20px;align-items:flex-start">
-    <!-- Left side: Upload section -->
+    <!-- Left side: Data Source Configuration -->
     <div class="upload-section" style="flex:1;min-width:400px">
-      <div class="file-input">
-        <label>Order File: </label><input type="file" id="orderFile" accept=".xlsx">
+
+      <!-- Toggle between Google Sheets and File Upload -->
+      <div style="margin-bottom:20px;background:#f8f9fa;padding:15px;border-radius:8px;">
+        <label style="font-weight:bold;margin-right:15px;">Data Source:</label>
+        <label style="margin-right:20px;cursor:pointer;">
+          <input type="radio" name="dataSource" value="sheets" checked onchange="toggleDataSource()"> Google Sheets
+        </label>
+        <label style="cursor:pointer;">
+          <input type="radio" name="dataSource" value="files" onchange="toggleDataSource()"> Upload Files
+        </label>
       </div>
-      <div class="file-input">
-        <label>Load File: </label><input type="file" id="loadFile" accept=".xlsx">
+
+      <!-- Google Sheets Section -->
+      <div id="sheetsSection">
+        <h3 style="margin-top:0;color:#333;">📊 Google Sheets URLs</h3>
+        <div class="file-input">
+          <label>Order Sheet URL: </label>
+          <input type="text" id="orderSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."
+            style="width:100%;padding:8px;border:2px solid #ddd;border-radius:4px;font-size:13px;">
+        </div>
+        <div class="file-input">
+          <label>Loading Sheet URL: </label>
+          <input type="text" id="loadSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."
+            style="width:100%;padding:8px;border:2px solid #ddd;border-radius:4px;font-size:13px;">
+        </div>
+        <div class="file-input">
+          <label>Packing Sheet URL: </label>
+          <input type="text" id="packSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."
+            style="width:100%;padding:8px;border:2px solid #ddd;border-radius:4px;font-size:13px;">
+        </div>
+        <button onclick="loadFromGoogleSheets()">Load from Sheets</button>
       </div>
-      <div class="file-input">
-        <label>Pack File: </label><input type="file" id="packFile" accept=".xlsx">
+
+      <!-- File Upload Section -->
+      <div id="filesSection" style="display:none;">
+        <h3 style="margin-top:0;color:#333;">📁 Upload Excel Files</h3>
+        <div class="file-input">
+          <label>Order File: </label><input type="file" id="orderFile" accept=".xlsx">
+        </div>
+        <div class="file-input">
+          <label>Load File: </label><input type="file" id="loadFile" accept=".xlsx">
+        </div>
+        <div class="file-input">
+          <label>Pack File: </label><input type="file" id="packFile" accept=".xlsx">
+        </div>
+        <button onclick="process()">Compare Files</button>
       </div>
-      <button onclick="process()">Compare</button>
-      <button onclick="showPOView()" style="background:#17a2b8;margin-left:10px">PO View</button>
-      <button onclick="showOCView()" style="background:#6f42c1;margin-left:10px">OC View</button>
-      <button onclick="window.location.href='daily-summary.html'" style="background:#28a745;margin-left:10px">Loading
-        Summary</button>
-      <button onclick="window.location.href='packing-summary.html'" style="background:#007bff;margin-left:10px">Packing
-        Summary</button>
-      <button onclick="toggleFilters()" style="background:#6c757d;margin-left:10px">Toggle Filters</button>
-      <button onclick="exportToPDF()" style="background:#e83e8c;margin-left:10px">Export to PDF</button>
-      <button onclick="exportToExcel()" style="background:#20c997;margin-left:10px">Export to Excel</button>
-      <button onclick="clearLoadedData()" style="background:#fd7e14;margin-left:10px">Clear Data</button>
+
+      <!-- Common Buttons -->
+      <div style="margin-top:15px;padding-top:15px;border-top:2px solid #dee2e6;">
+        <button onclick="showPOView()" style="background:#17a2b8;margin-left:0">PO View</button>
+        <button onclick="showOCView()" style="background:#6f42c1;margin-left:10px">OC View</button>
+        <button onclick="window.location.href='daily-summary.html'" style="background:#28a745;margin-left:10px">Loading
+          Summary</button>
+        <button onclick="window.location.href='packing-summary.html'"
+          style="background:#007bff;margin-left:10px">Packing
+          Summary</button>
+        <button onclick="toggleFilters()" style="background:#6c757d;margin-left:10px">Toggle Filters</button>
+        <button onclick="exportToPDF()" style="background:#e83e8c;margin-left:10px">Export to PDF</button>
+        <button onclick="exportToExcel()" style="background:#20c997;margin-left:10px">Export to Excel</button>
+        <button onclick="clearLoadedData()" style="background:#fd7e14;margin-left:10px">Clear Data</button>
+      </div>
     </div>
 
     <!-- Right side: Master Summary -->
@@ -127,7 +171,7 @@
 
   <div id="output"></div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 
 </html>
