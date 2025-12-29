@@ -1,36 +1,57 @@
 /**
  * Cloud Storage Configuration
  * 
- * RECOMMENDED: Use Google Drive for best results!
+ * EASY SETUP: Just paste your Google Drive/Sheets shareable links!
+ * The app will automatically convert them to direct download URLs.
  * 
- * GOOGLE DRIVE INSTRUCTIONS:
- * 1. Upload your Excel files to Google Drive
- * 2. Right-click each file → Share → "Anyone with the link can view"
- * 3. Copy the share link (looks like: https://drive.google.com/file/d/FILE_ID/view)
- * 4. Extract the FILE_ID (the part between /d/ and /view)
- * 5. Use format: https://drive.google.com/uc?export=download&id=FILE_ID
+ * GOOGLE DRIVE/SHEETS INSTRUCTIONS:
+ * 1. Upload your Excel files to Google Drive OR create Google Sheets
+ * 2. Right-click → Share → "Anyone with the link can view"
+ * 3. Copy the shareable link
+ * 4. Paste it below (the app converts it automatically!)
  * 
- * EXAMPLE:
- * Share link: https://drive.google.com/file/d/1ABC123xyz/view?usp=sharing
- * Direct link: https://drive.google.com/uc?export=download&id=1ABC123xyz
- * 
- * See GOOGLE_DRIVE_SETUP.md for detailed instructions
+ * SUPPORTED LINK FORMATS:
+ * - Google Sheets: https://docs.google.com/spreadsheets/d/FILE_ID/edit...
+ * - Google Drive: https://drive.google.com/file/d/FILE_ID/view...
+ * - Already converted: https://docs.google.com/spreadsheets/d/FILE_ID/export?format=xlsx
  */
 
+// Helper function to convert shareable links to direct download URLs
+function convertToDirectLink(url) {
+    if (!url) return '';
+
+    // Already in export format - return as is
+    if (url.includes('/export?format=xlsx')) {
+        return url;
+    }
+
+    // Google Sheets shareable link
+    // From: https://docs.google.com/spreadsheets/d/FILE_ID/edit#gid=0
+    // To: https://docs.google.com/spreadsheets/d/FILE_ID/export?format=xlsx
+    const sheetsMatch = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+    if (sheetsMatch) {
+        const fileId = sheetsMatch[1];
+        return `https://docs.google.com/spreadsheets/d/${fileId}/export?format=xlsx`;
+    }
+
+    // Google Drive shareable link
+    // From: https://drive.google.com/file/d/FILE_ID/view?usp=sharing
+    // To: https://drive.google.com/uc?export=download&id=FILE_ID
+    const driveMatch = url.match(/\/file\/d\/([a-zA-Z0-9-_]+)/);
+    if (driveMatch) {
+        const fileId = driveMatch[1];
+        return `https://drive.google.com/uc?export=download&id=${fileId}`;
+    }
+
+    // If no match, return original URL
+    return url;
+}
+
 const GOOGLE_SHEETS_CONFIG = {
-    // Google Drive direct download URLs (converted from your share links)
-    orderFileUrl: 'https://docs.google.com/spreadsheets/d/1PO8r0zC5KhShNjM-9fzr9ndk6qBeiLKNQPtfjV0rmNU/export?format=xlsx',
-    loadingFileUrl: 'https://docs.google.com/spreadsheets/d/11BMla9dUo_1PZbCRmMs2X_ZDOE0ms_SPChmamR-QJZs/export?format=xlsx',
-    packingFileUrl: 'https://docs.google.com/spreadsheets/d/17qNmLPawQFc5K-pM7NSBXNm_hQggQAPb5nzXiXt0omE/export?format=xlsx',
+    // JUST PASTE YOUR SHAREABLE LINKS HERE - They will be auto-converted!
+    // Example: https://docs.google.com/spreadsheets/d/YOUR_FILE_ID/edit#gid=0
 
-    // Alternative: OneDrive URLs (not recommended - authentication issues)
-    // orderFileUrl: 'https://1drv.ms/x/...',
-    // loadingFileUrl: 'https://1drv.ms/x/...',
-    // packingFileUrl: 'https://1drv.ms/x/...',
-
-    // Alternative: Google Sheets (more complex setup)
-    appsScriptUrl: '',
-    orderSheetId: '1PO8r0zC5KhShNjM-9fzr9ndk6qBeiLKNQPtfjV0rmNU',
-    loadingSheetId: '11BMla9dUo_1PZbCRmMs2X_ZDOE0ms_SPChmamR-QJZs',
-    packingSheetId: '17qNmLPawQFc5K-pM7NSBXNm_hQggQAPb5nzXiXt0omE'
+    orderFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/1PO8r0zC5KhShNjM-9fzr9ndk6qBeiLKNQPtfjV0rmNU/edit#gid=0'),
+    loadingFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/11BMla9dUo_1PZbCRmMs2X_ZDOE0ms_SPChmamR-QJZs/edit#gid=0'),
+    packingFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/17qNmLPawQFc5K-pM7NSBXNm_hQggQAPb5nzXiXt0omE/edit#gid=0'),
 };

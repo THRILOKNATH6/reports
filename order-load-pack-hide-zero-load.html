@@ -4,21 +4,58 @@
 <head>
   <meta charset="UTF-8">
   <title>Order vs Load vs Pack (Hide Zero Load)</title>
+
+  <!-- External libraries (no cache busting needed) -->
   <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-  <script src="sheets-config.js"></script>
-  <link rel="stylesheet" href="styles.css">
+
+  <!-- Cache busting script - loads files with timestamp -->
+  <script>
+    // Generate cache buster timestamp
+    const cacheBuster = new Date().getTime();
+
+    // Load CSS with cache buster
+    const cssLink = document.createElement('link');
+    cssLink.rel = 'stylesheet';
+    cssLink.href = `styles.css?v=${cacheBuster}`;
+    document.head.appendChild(cssLink);
+
+    // Load sizes config with cache buster
+    const sizesScript = document.createElement('script');
+    sizesScript.src = `sizes-config.js?v=${cacheBuster}`;
+    document.head.appendChild(sizesScript);
+
+    // Load config with cache buster
+    const configScript = document.createElement('script');
+    configScript.src = `sheets-config.js?v=${cacheBuster}`;
+    document.head.appendChild(configScript);
+  </script>
 </head>
 
 <body>
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
-    <h2 style="margin:0;">Order → Load → Pack Comparison</h2>
+    <div>
+      <h2 style="margin:0;">Order → Load → Pack Comparison</h2>
+      <small style="color:#666;font-size:11px;">
+        🔄 Auto-refresh enabled - Always loads latest files
+      </small>
+    </div>
     <button id="alertsButton" onclick="showAllErrors()"
       style="background:#dc3545;color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:16px;font-weight:bold;display:none;box-shadow:0 2px 8px rgba(220,53,69,0.3);transition:all 0.3s;">
       <span style="font-size:20px;margin-right:8px;">⚠️</span>
       <span id="alertsCount">0</span> Alerts
+    </button>
+    <button onclick="showDemoFilesModal()"
+      style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;border:none;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:16px;font-weight:bold;box-shadow:0 2px 8px rgba(102,126,234,0.3);transition:all 0.3s;margin-left:10px;">
+      <span style="font-size:20px;margin-right:8px;">📥</span>
+      Download Demo Files
+    </button>
+    <button onclick="showSupportedSizes()"
+      style="background:#28a745;color:white;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:14px;font-weight:bold;box-shadow:0 2px 8px rgba(40,167,69,0.3);transition:all 0.3s;margin-left:10px;">
+      <span style="font-size:16px;margin-right:6px;">📏</span>
+      Supported Sizes
     </button>
   </div>
 
@@ -47,23 +84,19 @@
 
       <!-- Google Sheets Section -->
       <div id="sheetsSection">
-        <h3 style="margin-top:0;color:#333;">📊 Google Sheets URLs</h3>
-        <div class="file-input">
-          <label>Order Sheet URL: </label>
-          <input type="text" id="orderSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."
-            style="width:100%;padding:8px;border:2px solid #ddd;border-radius:4px;font-size:13px;">
+        <h3 style="margin-top:0;color:#333;">📊 Load from Google Sheets</h3>
+        <div
+          style="background:#e7f3ff;padding:15px;border-radius:8px;border-left:4px solid #667eea;margin-bottom:15px;">
+          <p style="margin:0 0 10px 0;"><strong>📋 Configuration:</strong></p>
+          <p style="margin:0;font-size:13px;color:#555;">
+            Google Sheets URLs are configured in <code
+              style="background:#fff;padding:2px 6px;border-radius:3px;color:#667eea;font-weight:bold;">sheets-config.js</code>
+          </p>
+          <p style="margin:10px 0 0 0;font-size:12px;color:#666;">
+            To change sheets, edit the file IDs in sheets-config.js
+          </p>
         </div>
-        <div class="file-input">
-          <label>Loading Sheet URL: </label>
-          <input type="text" id="loadSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."
-            style="width:100%;padding:8px;border:2px solid #ddd;border-radius:4px;font-size:13px;">
-        </div>
-        <div class="file-input">
-          <label>Packing Sheet URL: </label>
-          <input type="text" id="packSheetUrl" placeholder="https://docs.google.com/spreadsheets/d/..."
-            style="width:100%;padding:8px;border:2px solid #ddd;border-radius:4px;font-size:13px;">
-        </div>
-        <button onclick="loadFromGoogleSheets()">Load from Sheets</button>
+        <button onclick="loadFromGoogleSheets()">🚀 Load from Google Sheets</button>
       </div>
 
       <!-- File Upload Section -->
@@ -171,7 +204,18 @@
 
   <div id="output"></div>
 
-  <script src="app.js?v=3"></script>
+  <!-- Load main app.js with cache buster -->
+  <script>
+    // Load demo download functions
+    const demoScript = document.createElement('script');
+    demoScript.src = `demo-download.js?v=${cacheBuster}`;
+    document.body.appendChild(demoScript);
+
+    // Load main app
+    const appScript = document.createElement('script');
+    appScript.src = `app.js?v=${cacheBuster}`;
+    document.body.appendChild(appScript);
+  </script>
 </body>
 
 </html>

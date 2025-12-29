@@ -1,11 +1,10 @@
 let mergedData = null;
 let currentView = 'loaded'; // 'loaded', 'notloaded', 'cleared', 'partial', 'poview'
 let rawExcelData = { order: null, load: null, pack: null }; // Store raw Excel data for error tracking
-const SIZES = [
-    "XXS", "XS", "S", "M", "L", "XL", "2XL",
-    "LT", "XLT", "2XT", "3XT", "4XT", "5XT",
-    "1X", "2X", "3X", "4X", "5X", "6X"
-];
+
+// SIZES array is now loaded from sizes-config.js
+// Edit sizes-config.js to add/remove size columns
+
 
 function readExcel(file) {
     return new Promise(res => {
@@ -43,7 +42,7 @@ function normalize(data, mode) {
     const idx = {
         oc: col(headers, "OC"),
         style: col(headers, "STYLE"),
-        po: col(headers, "PO NO"),
+        po: col(headers, "PO NO") !== -1 ? col(headers, "PO NO") : col(headers, "PO"), // Support both "PO NO" and "PO"
         country: col(headers, "COUNTRY"),
         colour: col(headers, "COLOUR"),
         line: col(headers, "LINE"),
@@ -1868,11 +1867,11 @@ function generateConsolidatedTable() {
     // Create table
     let html = `
     <div style="margin:20px 0;">
-      <h2 style="color:#333;margin-bottom:15px;">📊 Consolidated Summary Table</h2>
+      <h2 style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:15px 20px;margin-bottom:15px;border-radius:8px;">📊 Consolidated Summary Table</h2>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <thead>
-            <tr style="background:linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);color:white;">
+            <tr style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;">
               <th style="padding:12px;text-align:left;border:1px solid #ddd;">OC</th>
               <th style="padding:12px;text-align:left;border:1px solid #ddd;">LINE</th>
               <th style="padding:12px;text-align:left;border:1px solid #ddd;">STYLE</th>
@@ -2178,11 +2177,11 @@ function generateConsolidatedTableFiltered() {
     // Create table
     let html = `
     <div style="margin:20px 0;">
-      <h2 style="color:#333;margin-bottom:15px;">📊 ${viewTitle} - Consolidated Summary</h2>
+      <h2 style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;padding:15px 20px;margin-bottom:15px;border-radius:8px;">📊 ${viewTitle} - Consolidated Summary</h2>
       <div style="overflow-x:auto;">
         <table style="width:100%;border-collapse:collapse;font-size:13px;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
           <thead>
-            <tr style="background:linear-gradient(135deg, #134e5e 0%, #71b280 100%);color:white;">
+            <tr style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;">
               <th style="padding:12px;text-align:left;border:1px solid #ddd;">OC</th>
               <th style="padding:12px;text-align:left;border:1px solid #ddd;">LINE</th>
               <th style="padding:12px;text-align:left;border:1px solid #ddd;">STYLE</th>
@@ -2387,9 +2386,9 @@ function renderOCView() {
     <div style="overflow-x:auto;">
       <table style="width:100%;border-collapse:collapse;font-size:13px;background:white;box-shadow:0 2px 8px rgba(0,0,0,0.1);">
         <thead>
-          <tr style="background:linear-gradient(135deg, #fc4a1a 0%, #f7b733 100%);color:white;">
+          <tr style="background:linear-gradient(135deg, #667eea 0%, #764ba2 100%);color:white;">
             <th style="padding:12px;text-align:left;border:1px solid #ddd;">OC</th>
-            <th style="padding:12px;text-align:left;border:1px solid #ddd;">STYLE</th>
+            <th style="padding:12px;text-align:left;border:1px solid #330ed4ff;">STYLE</th>
             <th style="padding:12px;text-align:left;border:1px solid #ddd;">PO</th>
             <th style="padding:12px;text-align:left;border:1px solid #ddd;">COUNTRY</th>
             <th style="padding:12px;text-align:left;border:1px solid #ddd;">COLOUR</th>
