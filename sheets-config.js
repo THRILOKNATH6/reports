@@ -52,6 +52,6 @@ const GOOGLE_SHEETS_CONFIG = {
     // Example: https://docs.google.com/spreadsheets/d/YOUR_FILE_ID/edit#gid=0
 
     orderFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/1PO8r0zC5KhShNjM-9fzr9ndk6qBeiLKNQPtfjV0rmNU/edit#gid=0'),
-    loadingFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/11BMla9dUo_1PZbCRmMs2X_ZDOE0ms_SPChmamR-QJZs/edit#gid=0'),
-    packingFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/17qNmLPawQFc5K-pM7NSBXNm_hQggQAPb5nzXiXt0omE/edit#gid=0'),
+    loadingFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/1RhhjvFk4CdBVr4PZwivf88uOaO5Xm5C8/edit?usp=sharing&ouid=104797835712135417225&rtpof=true&sd=true'),
+    packingFileUrl: convertToDirectLink('https://docs.google.com/spreadsheets/d/1RhhjvFk4CdBVr4PZwivf88uOaO5Xm5C8/edit?usp=sharing&ouid=104797835712135417225&rtpof=true&sd=true'),
 };
